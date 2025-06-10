@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: Container(color: Colors.red, child: const Gamepage()),
+      home: const Gamepage(),
     );
   }
 }
