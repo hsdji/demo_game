@@ -11,7 +11,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Minesweeper',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -62,76 +61,9 @@ class _GamepageState extends State<Gamepage> {
     });
   }
 
-  void toggleFlag(int row, int col) {
-    if (currentGameState.gameOver || currentGameState.revealed[row][col])
-      return;
-
-    setState(() {
-      final result = gameAgent.toggleFlag(row, col);
-      currentGameState = result;
-    });
-  }
-
-  Color getNumberColor(int number) {
-    return Colors.primaries[number % Colors.primaries.length];
-  }
-
-  void _showRules() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('扫雷游戏规则'),
-        content: const SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('基本规则：', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('• 游戏在10x10的棋盘上进行'),
-              Text('• 棋盘上随机分布着10个地雷'),
-              Text('• 目标是找出所有非地雷的格子'),
-              SizedBox(height: 10),
-              Text('格子类型：', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('• 空白格子：点击后自动展开周围格子'),
-              Text('• 数字格子：显示周围地雷数量'),
-              Text('• 地雷格子：点击到则游戏结束'),
-              SizedBox(height: 10),
-              Text('操作方式：', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('• 左键点击：揭示格子'),
-              Text('• 右键点击：标记/取消标记地雷'),
-              Text('• 第一次点击保证安全'),
-              SizedBox(height: 10),
-              Text('游戏状态：', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('• 进行中：继续揭示格子'),
-              Text('• 失败：点击到地雷'),
-              Text('• 胜利：成功标记所有非地雷格子'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('明白了'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Minesweeper'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          // 添加规则按钮
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            onPressed: _showRules,
-          ),
-        ],
-      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -159,7 +91,6 @@ class _GamepageState extends State<Gamepage> {
                   int col = index % boardSize;
                   return GestureDetector(
                     onTap: () => revealCell(row, col),
-                    onSecondaryTap: () => toggleFlag(row, col),
                     child: Container(
                       width: 50,
                       height: 50,
@@ -207,6 +138,10 @@ class _GamepageState extends State<Gamepage> {
         ],
       ),
     );
+  }
+
+  Color getNumberColor(int number) {
+    return Colors.primaries[number % Colors.primaries.length];
   }
 }
 
@@ -356,34 +291,6 @@ class GameAgent {
     );
   }
 
-  /// 处理右键标记
-  GameState toggleFlag(int row, int col) {
-    if (gameOver || revealed[row][col]) {
-      return GameState(
-        mines: mines,
-        numbers: numbers,
-        revealed: revealed,
-        flagged: flagged,
-        gameOver: gameOver,
-        gameWon: gameWon,
-        isFirstClick: isFirstClick,
-      );
-    }
-
-    flagged[row][col] = !flagged[row][col];
-    _checkWinCondition();
-
-    return GameState(
-      mines: mines,
-      numbers: numbers,
-      revealed: revealed,
-      flagged: flagged,
-      gameOver: gameOver,
-      gameWon: gameWon,
-      isFirstClick: isFirstClick,
-    );
-  }
-
   /// 确保第一次点击安全
   void _ensureSafeFirstClick(int row, int col) {
     // 如果第一次点击到地雷，重新放置地雷
@@ -414,7 +321,6 @@ class GameAgent {
   }
 
   /// 自动展开空白格子
-  /// 使用广度优先搜索(BFS)来展开空白区域
   void _revealAdjacentCells(int row, int col) {
     // 使用队列来存储待处理的格子
     final queue = <Point<int>>[];
